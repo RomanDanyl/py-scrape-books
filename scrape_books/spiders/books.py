@@ -21,12 +21,13 @@ class BooksSpider(scrapy.Spider):
 
     def _parse_book_from_detail_page(self, response: Response) -> dict:
         title = response.css("h1::text").get()
-        price = float(response.css("p.price_color::text").get().replace("£", ""))
+        price_content = response.css("p.price_color::text").get() or "£666"
+        price = float(price_content.replace("£", ""))
 
-        availability_text = response.css("p.instock.availability").get()
+        availability_text = response.css("p.instock.availability").get() or "666"
         amount_in_stock = re.search(r"\d+", availability_text).group()
 
-        rating_class = response.css("p.star-rating::attr(class)").get()
+        rating_class = response.css("p.star-rating::attr(class)").get() or "No rating"
         rating = rating_class.split()[-1]
         rating_value = {
             "One": 1,
@@ -36,8 +37,8 @@ class BooksSpider(scrapy.Spider):
             "Five": 5
         }.get(rating, 0)
 
-        category = response.css("ul > li:nth-child(3) > a::text").get()
-        description = response.css("article > p::text").get()
+        category = response.css("ul > li:nth-child(3) > a::text").get() or "No category"
+        description = response.css("article > p::text").get() or "No description"
 
         yield {
             "title": title,
